@@ -1,30 +1,49 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Card, Table } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { findEditRecord, setCurEditRecord, setDeleteRecord, setEmployee } from "../../redux/slice/EmployeeSlice";
+import { setCurrPersonlRecord, setUpdateBankDetails, setUpdateEducationalDetails, setUpdateExperienceDetails } from "../../redux/slice/EmployeeSlice";
+import Pagination from "../Pagination";
 
 const EmployeesList = () => {
-    const { emplyee } = useSelector((state: any) => state.employee);
-    const [resData, setResData] = useState(emplyee);
+    const { PersonalDetails, BankDetails, EducationalDetails, ExperienceDetails } = useSelector((state: any) => state.employee);
+    const [resData, setResData] = useState(PersonalDetails);
     const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
 
+    let PageSize = 10;
     const dishpatch = useDispatch();
     const navigate = useNavigate();
 
-    const handleEdit = useCallback((id: string) => {
-        navigate('edit/' + id);
-        dishpatch(findEditRecord(id))
-    }, [dishpatch, dishpatch]);
+
+    const currentTableData = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * PageSize;
+        const lastPageIndex = firstPageIndex + PageSize;
+        return PersonalDetails.slice(firstPageIndex, lastPageIndex);
+    }, [currentPage]);
+
+
+    const handleEdit = (id: string) => {
+        debugger
+        let target = PersonalDetails.find((item: any) => { return id == item.id })
+        let bankObj = BankDetails.find((item: any) => { return id == item.empId });;
+        let EducationalObj = EducationalDetails.find((item: any) => { return id == item.empId });
+        let ExperienceObj = ExperienceDetails.find((item: any) => { return id == item.empId });
+        dishpatch(setCurrPersonlRecord(target));
+        dishpatch(setUpdateBankDetails(bankObj));
+        dishpatch(setUpdateEducationalDetails(EducationalObj));
+        dishpatch(setUpdateExperienceDetails(ExperienceObj))
+        navigate('/emp/' + id);
+    };
 
     const handleDeleteRecord = useCallback((id: string) => {
-        dishpatch(setDeleteRecord(id))
+        // dishpatch(setDeleteRecord(id))
     }, [dishpatch]);
 
     const handleSerach = (event: any) => {
         const query = event.target.value;
         setSearchQuery(query)
-        const searchList = emplyee.filter((item: any) => {
+        const searchList = PersonalDetails.filter((item: any) => {
             return item.first_name.toLowerCase().indexOf(query.toLowerCase()) !== -1;
         });
         setResData(searchList)
@@ -41,8 +60,7 @@ const EmployeesList = () => {
                     </div>
                     <div className="text-end">
                         <Button className="text-end p-2" onClick={(() => {
-                            dishpatch(findEditRecord(null))
-                            navigate('add')
+                            navigate('emp')
                         })}>Add+</Button>
                     </div>
                     <hr></hr>
@@ -62,7 +80,7 @@ const EmployeesList = () => {
                         <tbody>
 
                             {
-                                resData.map((item: any, index: any) => {
+                                resData?.map((item: any, index: any) => {
                                     return <>
                                         <tr>
                                             <td>{index + 1}</td>
@@ -86,6 +104,7 @@ const EmployeesList = () => {
 
                         </tbody>
                     </Table>
+
                 </Card>
             </div>
         </div>

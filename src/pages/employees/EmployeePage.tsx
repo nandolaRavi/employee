@@ -7,8 +7,7 @@ const EmplooyePgae = () => {
         <>
             <Routes>
                 <Route path='/' element={<EmployeesList />} />
-                <Route path='add' element={<Employeesform />} />
-                <Route path='edit/:id' element={<Employeesform />} />
+                <Route path='emp/:id?' element={<Employeesform />} />
             </Routes>
         </>
     )
